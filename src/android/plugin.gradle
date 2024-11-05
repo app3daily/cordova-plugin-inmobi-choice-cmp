@@ -1,0 +1,30 @@
+repositories{
+    jcenter()
+    flatDir{
+        dirs 'libs'
+    }
+}
+
+// https://stackoverflow.com/questions/30757208/cordova-plugin-development-adding-aar
+// https://github.com/phonegap/phonegap-plugin-barcodescanner/blob/master/plugin.xml#L46
+dependencies {
+    implementation fileTree(dir: 'libs', include: '*.aar')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
+    implementation "androidx.appcompat:appcompat:1.4.1" 
+    implementation "androidx.constraintlayout:constraintlayout:2.1.3" 
+    implementation "androidx.recyclerview:recyclerview:1.2.1" 
+    implementation "androidx.cardview:cardview:1.0.0"
+    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation "com.iabgpp:iabgpp-encoder:3.1.1"
+}
+
+android {
+    packagingOptions {
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+    }
+}

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-inmobi-choice-cmp" version="1.0.0"
+    xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <name>cordova-plugin-inmobi-choice-cmp</name>
+
+    <js-module name="InMobiChoiceCMP" src="www/inmobichoicecmp.js">
+        <clobbers target="InMobiChoiceCMP" />
+    </js-module>
+
+    <platform name="android">
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="InMobiChoiceCMPPlugin">
+                <param name="android-package"
+                    value="com.app3daily.inmobichoicecmp.InMobiChoiceCMPPlugin" />
+            </feature>
+        </config-file>
+
+        <config-file parent="/*" target="AndroidManifest.xml">
+        </config-file>
+
+        <source-file src="src/android/InMobiChoiceCMPPlugin.java"
+            target-dir="src/com/app3daily/inmobichoicecmp" />
+
+        <framework src="src/android/plugin.gradle" custom="true" type="gradleReference"/>
+        <lib-file src="src/android/inmobicmp-2.0.2.aar"/>
+    </platform>
+
+</plugin>
