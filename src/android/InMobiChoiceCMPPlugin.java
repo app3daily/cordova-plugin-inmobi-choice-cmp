@@ -33,7 +33,6 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.iabtcf.decoder.TCString;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -171,7 +170,6 @@ public class InMobiChoiceCMPPlugin extends CordovaPlugin implements ChoiceCmpCal
             d(tcStringObj.toString());
             // Create ObjectMapper instance
             ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.registerModule((new JavaTimeModule()));
             // Convert TCString object to JSON string
 
             String jsonString = objectMapper.writeValueAsString(tcStringObj);
