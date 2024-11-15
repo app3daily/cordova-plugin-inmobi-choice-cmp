@@ -21,7 +21,9 @@ package com.app3daily.inmobichoicecmp;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -30,6 +32,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
+
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.iabtcf.decoder.TCString;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.inmobi.cmp.ChoiceCmp;
 import com.inmobi.cmp.data.model.ChoiceStyle;
@@ -43,6 +49,8 @@ import com.inmobi.cmp.model.ChoiceError;
 import com.inmobi.cmp.model.DisplayInfo;
 import com.inmobi.cmp.model.NonIABData;
 import com.inmobi.cmp.model.PingReturn;
+
+import java.util.Map;
 
 public class InMobiChoiceCMPPlugin extends CordovaPlugin implements ChoiceCmpCallback{
 
@@ -73,6 +81,12 @@ public class InMobiChoiceCMPPlugin extends CordovaPlugin implements ChoiceCmpCal
         else if ("forceDisplayUI".equals(action)) {
             forceDisplayUI( callbackContext );
         }
+        else if ("getConsentData".equals(action)) {
+            getConsentDataFromPreference(callbackContext);
+        }
+        else if ("getDataFromPreference".equals(action)) {
+            getDataFromPreference(args, callbackContext);
+        }
         else
         {
             // Action not recognized
@@ -89,12 +103,13 @@ public class InMobiChoiceCMPPlugin extends CordovaPlugin implements ChoiceCmpCal
         Activity currentActivity = getCurrentActivity();
         if ( currentActivity == null ) throw new IllegalStateException( "No Activity found" );
 
-        // Guard against running init logic multiple times
-        // if ( isPluginInitialized )
-        // {
-        //     callbackContext.success( getInitializationMessage( context ) );
-        //     return;
-        // }
+//        // Guard against running init logic multiple times
+//        if ( isPluginInitialized )
+//        {
+//
+//            callbackContext.success( getConsentData() );
+//            return;
+//        }
 
         d( "Initializing InMobiChoiceCMPPlugin Cordova ..." );
 
@@ -136,17 +151,60 @@ public class InMobiChoiceCMPPlugin extends CordovaPlugin implements ChoiceCmpCal
 
         isPluginInitialized = true;
 
-        callbackContext.success( getInitializationMessage( context ) );
+        callbackContext.success( getConsentData( ) );
         
     }
 
-    private JSONObject getInitializationMessage(final Context context) throws JSONException
+    public void getConsentDataFromPreference (final CallbackContext callbackContext) {
+        callbackContext.success( getConsentData( ) );
+    }
+
+    private JSONObject getConsentData()
     {
+        // https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-is-the-cmp-in-app-internal-structure-for-the-defined-api
         JSONObject message = new JSONObject();
+        try {
+            String tcString = getSharedPreference("IABTCF_TCString");
+//            String tcString = getSharedPreference("IABTCF_TCString");
+            TCString tcStringObj = TCString.decode(tcString);
+            d("prateek");
+            d(tcStringObj.toString());
+            // Create ObjectMapper instance
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule((new JavaTimeModule()));
+            // Convert TCString object to JSON string
 
-        message.put( "isPluginInitialized", isPluginInitialized );
-
+            String jsonString = objectMapper.writeValueAsString(tcStringObj);
+            d(jsonString);
+            JSONObject tcJsonObject = new JSONObject(jsonString);
+            message.put("tcString",tcJsonObject);
+        } catch (Exception e) {
+            logStackTrace(e);
+        }
         return message;
+    }
+
+    public void getDataFromPreference (JSONArray keys, final CallbackContext callbackContext) {
+        JSONObject result = new JSONObject();
+        try {
+            for (int i = 0; i < keys.length(); i++) {
+                String key = keys.getString(i);
+                String value = getSharedPreference(key);
+                result.put(key, value);
+
+            }
+        } catch (JSONException e) {
+            logStackTrace(e);
+        }
+        callbackContext.success(result);
+    }
+
+    private String getSharedPreference(String key) {
+        Context context = cordova.getContext();
+        String defaultSharedPreferenceName = PreferenceManager.getDefaultSharedPreferencesName(context);
+        SharedPreferences sharedPref = context.getSharedPreferences(defaultSharedPreferenceName, Context.MODE_PRIVATE);
+        String str1 = sharedPref.getString(key, "");
+        return str1;
     }
 
     private boolean isInitialized()
